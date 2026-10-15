@@ -1,0 +1,47 @@
+@startuml
+
+title Создание нового пользователя сервиса Dog Otello
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "Пользователь" as User
+participant "Frontend\nDog Otello" as FE
+participant "Backend\nDog Otello" as BE
+database "СУБД\nDog Otello" as DB
+
+User -> FE : Заполняет экранную форму регистрации\n и инициирует создание нового пользователя
+activate FE
+
+FE -> BE : POST /owners
+activate BE
+
+BE -> BE : Валидация тела запроса\n(JSON, типы, обязательные поля,\nдлины, формат email, pattern password)
+
+alt Тело запроса невалидно
+    BE --> FE : 400 Bad Request
+    FE --> User : Отображение ошибки
+end
+
+BE -> DB : Проверка данных о пользователе\n в таблице dog_otello.owners
+activate DB
+DB --> BE : Возврат результата
+deactivate DB
+
+alt Логин и/или e-mail уже существует
+    BE --> FE : 409 Conflict
+    FE --> User : Отображение ошибки
+end
+
+BE -> DB : Сохранение данных о новом пользователе\n в таблицу dog_otello.owners
+activate DB
+DB --> BE : Возврат результата
+deactivate DB
+
+BE --> FE : 201 Created
+deactivate BE
+FE --> User : Отображение успешной регистрации
+deactivate FE
+
+@enduml

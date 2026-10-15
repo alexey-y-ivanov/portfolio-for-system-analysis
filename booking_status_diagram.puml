@@ -1,0 +1,28 @@
+@startuml
+
+title Состояния бронирования
+
+skinparam state {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+
+[*] --> created : POST /bookings\n(успешное создание бронирования)
+
+created : Статус "created"\nБронирование создано
+created --> pending_payment : Переход в сервис ЮKassa для оплаты
+created --> cancelled : DELETE /bookings/{bookingId}\n(успешное удаление бронирования)
+
+pending_payment : Статус "pending_payment"\nОжидание оплаты
+pending_payment --> paid : Успешная оплата в сервисе ЮКасса
+pending_payment --> cancelled : DELETE /bookings/{bookingId}\n(успешное удаление бронирования)
+
+paid : Статус "paid"\nБронирование оплачено
+paid --> cancelled : DELETE /bookings/{bookingId}\n(успешное удаление бронирования)
+
+cancelled : Статус "cancelled"\nБронирование отменено
+
+cancelled --> [*]
+
+@enduml

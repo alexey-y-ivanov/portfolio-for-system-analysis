@@ -1,0 +1,834 @@
+openapi: 3.0.3
+info:
+  title: Dog Otello API
+  description: API для сервиса бронирования мест в гостинице для собак
+  version: 1.0.0
+servers:
+  - url: https://dog-otello.com/api/v1
+
+paths:
+  /owners:
+    post:
+      tags:
+        - Owners
+      summary: Регистрация нового пользователя (владельца питомца)
+      operationId: createOwner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOwnerRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOwnerResponse'
+        '400':
+          description: | 
+            Bad request   
+            Возможные причины:    
+            * Тело запроса не является валидной JSON-структурой (пропущены внутренние кавычки, запятые и т.д.)
+            * Отклонение от допустимого количества символов в любом из полей
+            * Пропущено хотя бы одно обязательное поле
+            * В каком-либо из полей передано значение несоответствующего формата или типа данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400BadRequest'
+        '409':
+          description: |
+            Conflict
+            Возможные причины:
+            - Логин и/или e-mail уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/409Conflict'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500InternalServerError'
+
+  /pets:
+    post:
+      tags:
+        - Pets
+      summary: Создание нового питомца
+      operationId: createPet
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePetRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResponse'
+        '400':
+          description: | 
+            Bad request   
+            Возможные причины:    
+            * Тело запроса не является валидной JSON-структурой (пропущены внутренние кавычки, запятые и т.д.)
+            * Превышение допустимого количества символов в любом из полей
+            * Пропущено хотя бы одно обязательное поле
+            * В каком-либо из полей передано значение несоответствующего формата или типа данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Unauthorized'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500InternalServerError'
+
+  /pets/{petId}:
+    patch:
+      tags:
+        - Pets
+      summary: Редактирование питомца
+      operationId: updatePet
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: Идентификатор питомца
+          schema:
+            type: string
+            format: uuid
+            example: "223e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePetRequest'
+      responses:
+        '200':
+          description: Информация о питомце успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetResponse'
+        '400':
+          description: | 
+            Bad request   
+            Возможные причины:    
+            * Тело запроса не является валидной JSON-структурой (пропущены внутренние кавычки, запятые и т.д.)
+            * Отклонение от допустимого количества символов в любом из полей
+            * В каком-либо из полей передано значение несоответствующего формата или типа данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Unauthorized'
+        '403':
+          description: | 
+            Forbidden  
+            Возможные причины:  
+            * Попытка редактирования питомца, который не принадлежит пользователю
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Forbidden'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500InternalServerError'
+
+  /bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Создание нового бронирования
+      operationId: createBooking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+          headers:
+            Location:
+              description: URL созданного ресурса
+              schema:
+                type: string
+        '400':
+          description: | 
+            Bad request   
+            Возможные причины:    
+            * Тело запроса не является валидной JSON-структурой (пропущены внутренние кавычки, запятые и т.д.)
+            * Отклонение от допустимого количества символов в любом из полей
+            * Отклонение от значений в полях с энумератором
+            * Пропущено хотя бы одно обязательное поле
+            * Дата выезда оказалась раньше или равна дате заезда
+            * В каком-либо из полей передано значение несоответствующего формата или типа данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400BadRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Unauthorized'
+        '403':
+          description: | 
+            Forbidden  
+            Возможные причины:  
+            * Попытка создания бронирования для питомца, который не принадлежит пользователю
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Forbidden'
+        '404':
+          description: | 
+            Not found
+            Возможные причины:  
+            * Номер не найден
+            * Питомец не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404NotFound'
+        '409':
+          description: | 
+            Conflict  
+            Возможные причины:
+            * Номер уже занят на указанные даты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/409Conflict'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500InternalServerError'
+
+  /bookings/{bookingId}:
+    delete:
+      tags:
+        - Bookings
+      summary: Удаление бронирования
+      operationId: deleteBooking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          description: Идентификатор бронирования
+          schema:
+            type: string
+            format: uuid
+            example: "423e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '204':
+          description: | 
+            No content 
+            (Бронирование успешно удалено)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401Unauthorized'
+        '403':
+          description: | 
+            Forbidden  
+            Возможные причины:  
+            * Попытка удаления бронирования, которое не относится к пользователю
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403Forbidden'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/500InternalServerError'
+
+components:
+  schemas:
+    CreateOwnerRequest:
+      type: object
+      required:
+        - login
+        - password
+        - firstName
+        - lastName
+        - email
+        - phone
+      properties:
+        login:
+          type: string
+          description: Уникальный логин пользователя
+          minLength: 3
+          maxLength: 50
+          example: "ivanov_user"
+        password:
+          type: string
+          description: Пароль пользователя
+          minLength: 8
+          maxLength: 100
+          pattern: "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).+$"
+          example: "SecurePass123!"
+        firstName:
+          type: string
+          description: Имя пользователя
+          minLength: 1
+          maxLength: 50
+          example: "Иван"
+        lastName:
+          type: string
+          description: Фамилия пользователя
+          minLength: 1
+          maxLength: 50
+          example: "Иванов"
+        middleName:
+          type: string
+          description: Отчество пользователя (опционально)
+          minLength: 1
+          maxLength: 50
+          example: "Иванович"
+        email:
+          type: string
+          description: e-mail пользователя
+          format: email
+          maxLength: 100
+          example: "ivanov@example.com"
+        phone:
+          type: string
+          description: Номер телефона
+          maxLength: 20
+          example: "+79991234567"
+
+    CreateOwnerResponse:
+      type: object
+      required:
+        - id
+        - login
+        - firstName
+        - lastName
+        - email
+        - phone
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор пользователя (владельца питомца)
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        login:
+          type: string
+          description: Уникальный логин пользователя
+          minLength: 3
+          maxLength: 50
+          example: "ivanov_user"
+        firstName:
+          type: string
+          description: Имя пользователя
+          minLength: 1
+          maxLength: 50
+          example: "Иван"
+        lastName:
+          type: string
+          description: Фамилия пользователя
+          minLength: 1
+          maxLength: 50
+          example: "Иванов"
+        middleName:
+          type: string
+          description: Отчество пользователя (опционально)
+          minLength: 1
+          maxLength: 50
+          example: "Иванович"
+        email:
+          type: string
+          description: e-mail пользователя
+          format: email
+          maxLength: 100
+          example: "ivanov@example.com"
+        phone:
+          type: string
+          description: Номер телефона
+          maxLength: 20
+          example: "+79991234567"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания пользователя (владельца питомца) в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2023-10-05T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время обновления пользователя (владельца питомца) в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2023-10-05T14:30:00Z"
+
+    CreatePetRequest:
+      type: object
+      required:
+        - name
+        - breed
+        - gender
+        - age
+        - weight
+      properties:
+        name:
+          type: string
+          description: Кличка питомца
+          minLength: 1
+          maxLength: 50
+          example: "Бадди"
+        breed:
+          type: string
+          description: Порода питомца
+          minLength: 1
+          maxLength: 100
+          example: "Лабрадор"
+        gender:
+          type: string
+          description: Пол питомца
+          enum:
+            - male
+            - female
+          example: "male"
+        age:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Возраст питомца в годах
+          example: 4
+        weight:
+          type: integer
+          format: int32
+          description: Масса питомца в кг
+          example: 25
+        specialMarks:
+          type: string
+          description: Особые пометки о питомце
+          maxLength: 500
+          example: "Аллергия на курицу"
+
+    UpdatePetRequest:
+      type: object
+      description: Все поля опциональны для частичного обновления
+      properties:
+        name:
+          type: string
+          description: Кличка питомца
+          minLength: 1
+          maxLength: 50
+          example: "Бадди"
+        breed:
+          type: string
+          description: Порода питомца
+          minLength: 1
+          maxLength: 100
+          example: "Лабрадор"
+        gender:
+          type: string
+          description: Пол питомца
+          enum:
+            - male
+            - female
+          example: "male"
+        age:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Возраст питомца в годах
+          example: 4
+        weight:
+          type: integer
+          format: int32
+          description: Масса питомца в кг
+          example: 25
+        specialMarks:
+          type: string
+          description: Особые пометки о питомце
+          maxLength: 500
+          example: "Аллергия на курицу, требует особой диеты"
+
+    CreateBookingRequest:
+      type: object
+      required:
+        - petId
+        - roomId
+        - checkInDate
+        - checkOutDate
+        - feedingScheme
+      properties:
+        petId:
+          type: string
+          format: uuid
+          description: UUID питомца
+          example: "223e4567-e89b-12d3-a456-426614174000"
+        roomId:
+          type: string
+          format: uuid
+          description: UUID номера
+          example: "323e4567-e89b-12d3-a456-426614174000"
+        checkInDate:
+          type: string
+          format: date
+          description: Дата заезда
+          example: "2023-12-01"
+        checkOutDate:
+          type: string
+          format: date
+          description: Дата выезда (должна быть позже даты заезда)
+          example: "2023-12-05"
+        feedingScheme:
+          $ref: "#/components/schemas/feedingSchemeEnum"
+
+    PetResponse:
+      type: object
+      required:
+        - id
+        - name
+        - breed
+        - gender
+        - age
+        - weight
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор питомца
+          example: "223e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Кличка питомца
+          minLength: 1
+          maxLength: 50
+          example: "Бадди"
+        breed:
+          type: string
+          description: Порода питомца
+          minLength: 1
+          maxLength: 100
+          example: "Лабрадор"
+        gender:
+          type: string
+          description: Пол питомца
+          enum:
+            - male
+            - female
+          example: "male"
+        age:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Возраст питомца в годах
+          example: 4
+        weight:
+          type: integer
+          format: int32
+          description: Масса питомца в кг
+          example: 25
+        specialMarks:
+          type: string
+          description: Особые пометки о питомце
+          maxLength: 500
+          example: "Аллергия на курицу"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания записи о питомце в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2023-10-05T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время обновления записи о питомце в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2023-10-05T14:30:00Z"
+
+    BookingResponse:
+      type: object
+      required:
+        - id
+        - petId
+        - roomId
+        - ownerId
+        - checkInDate
+        - checkOutDate
+        - feedingScheme
+        - status
+        - totalAmount
+        - currency
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Идентификатор записи
+          example: "423e4567-e89b-12d3-a456-426614174000"
+        petId:
+          type: string
+          format: uuid
+          description: UUID питомца
+          example: "223e4567-e89b-12d3-a456-426614174000"
+        roomId:
+          type: string
+          format: uuid
+          description: UUID номера
+          example: "323e4567-e89b-12d3-a456-426614174000"
+        ownerId:
+          type: string
+          format: uuid
+          description: Идентификатор владельца питомца
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        checkInDate:
+          type: string
+          format: date
+          description: Дата заезда
+          example: "2023-12-01"
+        checkOutDate:
+          type: string
+          format: date
+          description: Дата выезда
+          example: "2023-12-05"
+        feedingScheme:
+          $ref: "#/components/schemas/feedingSchemeEnum"
+        status:
+          type: string
+          description: Статус бронирования
+          enum:
+            - created
+            - pending_payment
+            - paid
+            - cancelled
+        totalAmount:
+          type: number
+          format: double
+          description: Общая сумма бронирования
+          example: 15000.0
+        currency:
+          $ref: "#/components/schemas/currencyEnum"
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата и время создания бронирования в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2026-10-05T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата и время обновления бронирования в формате yyyy-MM-ddTHH:mm:SSZ
+          example: "2026-10-05T14:30:00Z"
+
+    400BadRequest:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Bad Request"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Тело запроса не является валидной JSON-структурой"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 400
+
+    401Unauthorized:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Unauthorized"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Отсутствует или некорректный токен аутентификации"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 401
+
+    403Forbidden:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Forbidden"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Доступ к ресурсу запрещен"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 403
+
+    404NotFound:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Not Found"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Ресурс не найден"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 404
+
+    409Conflict:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Conflict"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Логин и/или e-mail пользователя уже существует"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 409
+
+    500InternalServerError:
+      type: object
+      required:
+        - error
+        - message
+        - status
+      properties:
+        error:
+          type: string
+          description: Ошибка
+          maxLength: 100
+          example: "Internal Server Error"
+        message:
+          type: string
+          description: Детальное описание причины ошибки
+          maxLength: 500
+          example: "Внутренняя ошибка сервера"
+        status:
+          type: integer
+          description: Код статуса
+          format: int32
+          example: 500
+
+    feedingSchemeEnum:
+      type: string
+      description: Схема питания для питомца
+      enum:
+        - standard
+        - premium
+        - veterinary
+        - custom
+
+    currencyEnum:
+      type: string
+      description: Валюта платежа
+      enum:
+        - RUB
+        - USD
+        - EUR
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
