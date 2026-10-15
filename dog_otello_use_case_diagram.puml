@@ -1,0 +1,56 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+title Сценарии использования сервиса Dog Otello
+
+actor "Пользователь" as Owner
+actor "Платёжный сервис ЮKassa" as Payment
+
+rectangle "Сервис Dog Otello" {
+
+    ' === Пользователь ===
+    usecase "Создание нового\nпользователя" as UC_CreateOwner
+    usecase "Редактирование\nпользователя" as UC_UpdateOwner
+    usecase "Аутентификация\nпользователя" as UC_Auth
+
+    ' === Питомцы ===
+    usecase "Создание питомца" as UC_CreatePet
+    usecase "Просмотр перечня всех\nпитомцев пользователя" as UC_ListPets
+    usecase "Просмотр данных\nо питомце" as UC_ViewPet
+    usecase "Редактирование\nпитомца" as UC_UpdatePet
+    usecase "Удаление питомца" as UC_DeletePet
+
+    ' === Бронирования ===
+    usecase "Создание\nбронирования" as UC_CreateBooking
+    usecase "Оплата\nбронирования" as UC_PayBooking
+    usecase "Отмена\nбронирования" as UC_CancelBooking
+    usecase "Возврат средств\nпри отмене\nоплаченного бронирования" as UC_Refund
+}
+
+
+Owner -- UC_CreateOwner
+Owner -- UC_UpdateOwner
+Owner -- UC_Auth
+Owner -- UC_CreatePet
+Owner -- UC_ListPets
+Owner -- UC_ViewPet
+Owner -- UC_UpdatePet
+Owner -- UC_DeletePet
+Owner -- UC_CreateBooking
+Owner -- UC_PayBooking
+Owner -- UC_CancelBooking
+
+UC_PayBooking -- Payment
+UC_Refund -- Payment
+
+UC_CancelBooking <.. UC_Refund : <<extend>>
+
+note right of UC_PayBooking
+  Оплата возможна в течение 30 минут
+  после создания бронирования.
+  По истечении этого времени бронирование
+  автоматически отменяется.
+end note
+
+@enduml

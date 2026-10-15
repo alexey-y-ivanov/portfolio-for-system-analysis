@@ -1,0 +1,86 @@
+@startuml
+
+title Фрагмент физической модели данных сервиса Dog Otello
+
+left to right direction
+skinparam linetype curved
+skinparam nodesep 60
+skinparam ranksep 90
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class "owners" as Owner {
+  id : uuid <<PK>> NOT NULL
+  --
+  login : varchar(50) NOT NULL
+  password_hash : varchar(100) NOT NULL
+  first_name : varchar(50) NOT NULL
+  last_name : varchar(50) NOT NULL
+  middle_name : varchar(50)
+  email : varchar(100) NOT NULL
+  phone : varchar(20) NOT NULL
+  created_at : timestamp NOT NULL
+  updated_at : timestamp NOT NULL
+}
+
+class "pets" as Pet {
+  id : uuid <<PK>> NOT NULL
+  --
+  owner_id : uuid <<FK>> NOT NULL
+  --
+  name : varchar(50) NOT NULL
+  breed : varchar(100) NOT NULL
+  gender : varchar(10) NOT NULL
+  age : integer NOT NULL
+  weight : integer NOT NULL
+  special_marks : varchar(500)
+  created_at : timestamp NOT NULL
+  updated_at : timestamp NOT NULL
+}
+
+class "rooms" as Room {
+  id : uuid <<PK>> NOT NULL
+  --
+  room_number : varchar(20) NOT NULL
+  room_type : varchar(20) NOT NULL
+  price_per_day : double precision NOT NULL
+  created_at : timestamp NOT NULL
+  updated_at : timestamp NOT NULL
+}
+
+class "bookings" as Booking {
+  id : uuid <<PK>> NOT NULL
+  --
+  owner_id : uuid <<FK>> NOT NULL
+  pet_id : uuid <<FK>> NOT NULL
+  room_id : uuid <<FK>> NOT NULL
+  --
+  check_in_date : date NOT NULL
+  check_out_date : date NOT NULL
+  feeding_scheme : varchar(20) NOT NULL
+  status : varchar(20) NOT NULL
+  created_at : timestamp NOT NULL
+  updated_at : timestamp NOT NULL
+}
+
+class "payments" as Payment {
+  id : uuid <<PK>> NOT NULL
+  --
+  booking_id : uuid <<FK>> NOT NULL
+  --
+  payment_type : varchar(20) NOT NULL
+  total_amount : double precision NOT NULL
+  currency : varchar(3) NOT NULL
+  transaction_id : varchar(64) NOT NULL
+  payment_status : varchar(20) NOT NULL
+  created_at : timestamp NOT NULL
+  updated_at : timestamp NOT NULL
+}
+
+Owner::id   ||--o{ Pet::owner_id       : ""
+Owner::id   ||--o{ Booking::owner_id   : ""
+Pet::id     ||--o{ Booking::pet_id     : ""
+Room::id    ||--o{ Booking::room_id    : ""
+Booking::id ||--|| Payment::booking_id : ""
+
+@enduml
